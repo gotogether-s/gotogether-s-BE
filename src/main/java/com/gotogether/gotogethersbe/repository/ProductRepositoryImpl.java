@@ -102,9 +102,9 @@ public class ProductRepositoryImpl implements ProductRepositoryQueryDsl {
                         .or(safeNull(() -> product.companion.eq(companion)))
                         .or(safeNull(() -> product.genderGroup.eq(genderGroup)))
                         .or(safeNull(() -> product.theme.eq(theme))))
+                .orderBy(priceSort(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(priceSort(pageable))
                 .fetch().stream()
                 .map(ProductDto.ProductResponse::of)
                 .collect(Collectors.toList());
