@@ -6,13 +6,12 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -28,9 +27,9 @@ public class ProductRepositoryImpl implements ProductRepositoryQueryDsl {
     public Page<ProductDto.ProductResponse> findCustomComplex(Pageable pageable, String ages, GenderGroup genderGroup, Companion companion, Religion religion, Theme theme) {
         List<ProductDto.ProductResponse> content = findCustom(pageable, ages, genderGroup, companion, religion, theme);
 
-        JPAQuery<Long> countQuery = getCount(ages, genderGroup, companion, religion, theme);
+        long count = getCount(ages, genderGroup, companion, religion, theme);
 
-        return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetchOne());
+        return new PageImpl<>(content, pageable, count);
 
     }
 
@@ -57,9 +56,9 @@ public class ProductRepositoryImpl implements ProductRepositoryQueryDsl {
     public Page<ProductDto.ProductResponse> findAllCategoriesComplex(Pageable pageable, String category) {
         List<ProductDto.ProductResponse> content = findAllCategories(pageable, category);
 
-        JPAQuery<Long> countQuery = getCount(category);
+        long count = getCount(category);
 
-        return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetchOne());
+        return new PageImpl<>(content, pageable, count);
     }
 
     public List<ProductDto.ProductResponse> findAllCategories(Pageable pageable, String category) {
@@ -86,9 +85,9 @@ public class ProductRepositoryImpl implements ProductRepositoryQueryDsl {
     public Page<ProductDto.ProductResponse> findAllCategoriesComplex(Pageable pageable, String category1, String category2, String category3, String category4) {
         List<ProductDto.ProductResponse> content = findAllCategories(pageable, category1, category2, category3, category4);
 
-        JPAQuery<Long> countQuery = getCount(category1, category2, category3, category4);
+        long count = getCount(category1, category2, category3, category4);
 
-        return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetchOne());
+        return new PageImpl<>(content, pageable, count);
     }
 
     public List<ProductDto.ProductResponse> findAllCategories(Pageable pageable, String category1, String category2, String category3, String category4) {
@@ -115,13 +114,13 @@ public class ProductRepositoryImpl implements ProductRepositoryQueryDsl {
     public Page<ProductDto.ProductResponse> findByProductNameContainsComplex(Pageable pageable, String category) {
         List<ProductDto.ProductResponse> content = findByProductNameContains(pageable, category);
 
-        JPAQuery<Long> countQuery = getCount(category);
+        long count = getCount(category);
 
-        return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetchOne());
+        return new PageImpl<>(content, pageable, count);
     }
 
     public List<ProductDto.ProductResponse> findByProductNameContains(Pageable pageable, String keyword) {
-        return jpaQueryFactory.selectFrom(product)
+        return jpaQueryFactory.select(product).from(product)
                 .where(safeNull(() -> product.productName.contains(keyword)))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -131,35 +130,31 @@ public class ProductRepositoryImpl implements ProductRepositoryQueryDsl {
                 .collect(Collectors.toList());
     }
 
-    private JPAQuery<Long> getCount(String category) {
-        JPAQuery<Long> countQuery = jpaQueryFactory.select(product.count()).from(product)
+    private long getCount(String category) {
+        return jpaQueryFactory.select(product).from(product)
                 .where(safeNull(() -> product.ages.contains(category)),
                         safeNull(() -> product.continent.eq(Continent.valueOf(category))),
                         safeNull(() -> product.companion.eq(Companion.valueOf(category))),
                         safeNull(() -> product.genderGroup.eq(GenderGroup.valueOf(category))),
-                        safeNull(() -> product.theme.eq(Theme.valueOf(category))));
-        return countQuery;
+                        safeNull(() -> product.theme.eq(Theme.valueOf(category)))).fetch().size();
     }
 
-    private JPAQuery<Long> getCount(String ages, GenderGroup genderGroup, Companion companion, Religion religion, Theme theme) {
-        JPAQuery<Long> countQuery = jpaQueryFactory.select(product.count()).from(product)
+    private long getCount(String ages, GenderGroup genderGroup, Companion companion, Religion religion, Theme theme) {
+        return jpaQueryFactory.select(product).from(product)
                 .where(safeNull(() -> product.ages.contains(ages)),
                         safeNull(() -> product.genderGroup.eq(genderGroup)),
                         safeNull(() -> product.companion.eq(companion)),
                         safeNull(() -> product.religion.eq(religion)),
-                        safeNull(() -> product.theme.eq(theme)));
-        return countQuery;
+                        safeNull(() -> product.theme.eq(theme))).fetch().size();
     }
 
-    private JPAQuery<Long> getCount(String category1, String category2, String category3, String category4) {
-        JPAQuery<Long> countQuery = jpaQueryFactory.select(product.count()).from(product)
-                .where(
-                        safeNull(() -> product.continent.eq(Continent.valueOf(category1))),
+    private long getCount(String category1, String category2, String category3, String category4) {
+        return jpaQueryFactory.select(product).from(product)
+                .where( safeNull(() -> product.continent.eq(Continent.valueOf(category1))),
                         safeNull(() -> product.ages.contains(category2)),
                         safeNull(() -> product.companion.eq(Companion.valueOf(category3))),
                         safeNull(() -> product.genderGroup.eq(GenderGroup.valueOf(category3))),
-                        safeNull(() -> product.theme.eq(Theme.valueOf(category4))));
-        return countQuery;
+                        safeNull(() -> product.theme.eq(Theme.valueOf(category4)))).fetch().size();
     }
 
     private OrderSpecifier<?> priceSort(Pageable pageable) {
