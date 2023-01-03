@@ -149,12 +149,21 @@ public class ProductRepositoryImpl implements ProductRepositoryQueryDsl {
     }
 
     private long getCount(String category1, String category2, String category3, String category4) {
-        return jpaQueryFactory.select(product).from(product)
-                .where( safeNull(() -> product.continent.eq(Continent.valueOf(category1))),
-                        safeNull(() -> product.ages.contains(category2)),
-                        safeNull(() -> product.companion.eq(Companion.valueOf(category3))),
-                        safeNull(() -> product.genderGroup.eq(GenderGroup.valueOf(category3))),
-                        safeNull(() -> product.theme.eq(Theme.valueOf(category4)))).fetch().size();
+        BooleanBuilder builder = new BooleanBuilder();
+        if(category1 != null){
+            builder.and( product.continent.eq(Continent.valueOf(category1)));
+        }
+        if(category2 != null){
+            builder.and(product.ages.contains(category2));
+        }
+        if(category3 != null){
+            builder.and( product.companion.eq(Companion.valueOf(category3)));
+        }
+        if(category4 != null){
+            builder.and( product.genderGroup.eq(GenderGroup.valueOf(category3)));
+        }
+        return jpaQueryFactory.selectFrom(product)
+                .where(builder).fetch().size();
     }
 
     private OrderSpecifier<?> priceSort(Pageable pageable) {
