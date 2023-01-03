@@ -91,17 +91,23 @@ public class ProductRepositoryImpl implements ProductRepositoryQueryDsl {
     }
 
     public List<ProductDto.ProductResponse> findAllCategories(Pageable pageable, String category1, String category2, String category3, String category4) {
-        Continent continent = Continent.typeChecker(category1);
-        Companion companion = Companion.typeChecker(category3);
-        GenderGroup genderGroup = GenderGroup.typeChecker(category3);
-        Theme theme = Theme.typeChecker(category4);
-
+        BooleanBuilder builder = new BooleanBuilder();
+        if(!category1.isBlank() && category1 != null){
+            builder.and( product.continent.eq(Continent.typeChecker(category1)));
+        }
+        if(!category2.isBlank() && category2 != null){
+            builder.and(product.ages.contains(category2));
+        }
+        if(!category3.isBlank() && Companion.typeChecker(category3) != null){
+            builder.and( product.companion.eq(Companion.typeChecker(category3)));
+        }else if( !category3.isBlank() && GenderGroup.typeChecker(category3) != null){
+            builder.and(product.genderGroup.eq(GenderGroup.typeChecker(category3)));
+        }
+        if(!category4.isBlank() && category4 != null){
+            builder.and( product.theme.eq(Theme.typeChecker(category4)));
+        }
         return jpaQueryFactory.selectFrom(product)
-                .where((safeNull(() -> product.continent.eq(continent))
-                        .and(safeNull(() -> product.ages.contains(category2))))
-                        .and(safeNull(() -> product.companion.eq(companion)))
-                        .and(safeNull(() -> product.genderGroup.eq(genderGroup)))
-                        .and(safeNull(() -> product.theme.eq(theme))))
+                .where(builder)
                 .orderBy(priceSort(pageable))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -150,18 +156,18 @@ public class ProductRepositoryImpl implements ProductRepositoryQueryDsl {
 
     private long getCount(String category1, String category2, String category3, String category4) {
         BooleanBuilder builder = new BooleanBuilder();
-        if(category1 != null){
+        if(!category1.isBlank() && category1 != null){
             builder.and( product.continent.eq(Continent.typeChecker(category1)));
         }
-        if(category2 != null){
+        if(!category2.isBlank() && category2 != null){
             builder.and(product.ages.contains(category2));
         }
-        if(Companion.typeChecker(category3) != null){
+        if(!category3.isBlank() && Companion.typeChecker(category3) != null){
             builder.and( product.companion.eq(Companion.typeChecker(category3)));
-        }else if(GenderGroup.typeChecker(category3) != null){
+        }else if( !category3.isBlank() && GenderGroup.typeChecker(category3) != null){
             builder.and(product.genderGroup.eq(GenderGroup.typeChecker(category3)));
         }
-        if(category4 != null){
+        if(!category4.isBlank() && category4 != null){
             builder.and( product.theme.eq(Theme.typeChecker(category4)));
         }
         return jpaQueryFactory.selectFrom(product)
