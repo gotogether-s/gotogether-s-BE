@@ -157,10 +157,10 @@ public class ProductRepositoryImpl implements ProductRepositoryQueryDsl {
             builder.and(product.ages.contains(category2));
         }
         if(category3 != null){
-            builder.and( product.companion.eq(Companion.valueOf(category3)));
+            builder.and(( product.companion.eq(Companion.valueOf(category3))).or ( product.genderGroup.eq(GenderGroup.valueOf(category3))));
         }
         if(category4 != null){
-            builder.and( product.genderGroup.eq(GenderGroup.valueOf(category4)));
+            builder.and( product.theme.eq(Theme.valueOf(category4)));
         }
         return jpaQueryFactory.selectFrom(product)
                 .where(builder).fetch().size();
