@@ -151,16 +151,18 @@ public class ProductRepositoryImpl implements ProductRepositoryQueryDsl {
     private long getCount(String category1, String category2, String category3, String category4) {
         BooleanBuilder builder = new BooleanBuilder();
         if(category1 != null){
-            builder.and( product.continent.eq(Continent.valueOf(category1)));
+            builder.and( product.continent.eq(Continent.typeChecker(category1)));
         }
         if(category2 != null){
             builder.and(product.ages.contains(category2));
         }
-        if(category3 != null){
-            builder.and(( product.companion.eq(Companion.valueOf(category3))).or ( product.genderGroup.eq(GenderGroup.valueOf(category3))));
+        if(Companion.typeChecker(category3) != null){
+            builder.and( product.companion.eq(Companion.typeChecker(category3)));
+        }else if(GenderGroup.typeChecker(category3) != null){
+            builder.and(product.genderGroup.eq(GenderGroup.typeChecker(category3)));
         }
         if(category4 != null){
-            builder.and( product.theme.eq(Theme.valueOf(category4)));
+            builder.and( product.theme.eq(Theme.typeChecker(category4)));
         }
         return jpaQueryFactory.selectFrom(product)
                 .where(builder).fetch().size();
