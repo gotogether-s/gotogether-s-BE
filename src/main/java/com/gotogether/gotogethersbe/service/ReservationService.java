@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -100,7 +101,7 @@ public class ReservationService {
         return reservationList
                 .stream()
                 .map(ReservationDto.ReservationListResponse::new)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     // 최근 예약 상품 기간별 필터링(90일, 180일, 365일)

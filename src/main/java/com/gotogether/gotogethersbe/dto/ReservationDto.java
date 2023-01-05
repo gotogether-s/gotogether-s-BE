@@ -62,6 +62,7 @@ public class ReservationDto {
         @Enumerated(EnumType.STRING)
         private Status status;
 
+        private Long product_id;
         private String productName;
         private String airport;
         private String duration;
@@ -73,6 +74,7 @@ public class ReservationDto {
             reservation_id = reservation.getId();
             thumbnail = reservation.getProduct().getThumbnail();
             status = reservation.getStatus();
+            product_id = reservation.getProduct().getId();
             productName = reservation.getProduct().getProductName();
             duration = reservation.getDuration();
             airport = reservation.getProduct().getAirport();

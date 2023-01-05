@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -58,7 +59,7 @@ public class WishService {
         return wishList
                 .stream()
                 .map(WishDto.WishListResponse::new)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     // 찜 선택 삭제

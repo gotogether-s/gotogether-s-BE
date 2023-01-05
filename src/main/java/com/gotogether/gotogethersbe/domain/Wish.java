@@ -19,11 +19,11 @@ public class Wish {
     @Column(name = "WISH_ID")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "PRODUCT_ID")
     private Product product;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "MEMBER_ID")
     private Member member;
 }
